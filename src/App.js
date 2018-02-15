@@ -13,6 +13,12 @@ class App extends Component {
     setInterval(() => {
       this.props.moveObjects(this.canvasMousePosition);
     }, 10);
+    window.onresize = () => {
+      const cnv = document.getElementById("aliens-go-home-canvas");
+      cnv.style.width = `${window.innerWidth}px`;
+      cnv.style.height = `${window.innerHeight}px`;
+    };
+    window.onresize();
   }
 
   trackMouse(e) {
@@ -30,8 +36,8 @@ class App extends Component {
 }
 
 App.propTypes = {
-  angle:PropTypes.number.isRequired,
-  moveObjects:PropTypes.func.isRequired
-}
+  angle: PropTypes.number.isRequired,
+  moveObjects: PropTypes.func.isRequired
+};
 
 export default App;
