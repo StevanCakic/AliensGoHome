@@ -2,6 +2,15 @@ import React, { Component } from "react";
 import PropTypes from "prop-types";
 import { getCanvasPosition } from "./utils/formulas";
 import Canvas from "./components/Canvas";
+import * as Auth0 from "auth0-web";
+
+Auth0.configure({
+  domain: "aliens-go.auth0.com",
+  clientID: "k6gGQSQp6XPzyPPLHEqDPaZmAZlLt6pI",
+  redirectUri: "http://localhost:3000/",
+  responseType: "token id_token",
+  scope: "openid profile manage:points"
+});
 
 class App extends Component {
   constructor(props) {
@@ -10,6 +19,10 @@ class App extends Component {
   }
 
   componentDidMount() {
+    Auth0.handleAuthCallback();
+    Auth0.subscribe(auth => {
+      console.log(auth);
+    });
     setInterval(() => {
       this.props.moveObjects(this.canvasMousePosition);
     }, 10);
@@ -43,13 +56,15 @@ App.propTypes = {
     started: PropTypes.bool.isRequired,
     kills: PropTypes.number.isRequired,
     lives: PropTypes.number.isRequired,
-    flyingObjects: PropTypes.arrayOf(PropTypes.shape({
-      position:PropTypes.shape({
-        x:PropTypes.number.isRequired,
-        y:PropTypes.number.isRequired
-      }).isRequired,
-      id: PropTypes.number.isRequired
-    })).isRequired
+    flyingObjects: PropTypes.arrayOf(
+      PropTypes.shape({
+        position: PropTypes.shape({
+          x: PropTypes.number.isRequired,
+          y: PropTypes.number.isRequired
+        }).isRequired,
+        id: PropTypes.number.isRequired
+      })
+    ).isRequired
   }).isRequired,
   moveObjects: PropTypes.func.isRequired,
   startGame: PropTypes.func.isRequired
