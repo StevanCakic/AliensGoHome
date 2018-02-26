@@ -20,12 +20,13 @@ const Canvas = props => {
     window.innerWidth,
     gameHeight
   ];
-  
+
   return (
     <svg
       id="aliens-go-home-canvas"
       onMouseMove={props.trackMouse}
       viewBox={viewBox}
+      onClick={props.shoot}
     >
       <defs>
         <filter id="shadow">
@@ -34,9 +35,11 @@ const Canvas = props => {
       </defs>
       <Sky />
       <Ground />
+      {props.gameState.cannonBalls.map(cannonBall => (
+        <CannonBall key={cannonBall.id} position={cannonBall.position} />
+      ))}
       <CannonPipe rotation={props.angle} />
       <CannonBase />
-      <CannonBall position={{ x: 0, y: -100 }} />
       <CurrentScore score={15} />
       {!props.gameState.started && (
         <g>
@@ -87,7 +90,8 @@ Canvas.propTypes = {
       name: PropTypes.string.isRequired,
       picture: PropTypes.string.isRequired
     })
-  )
+  ),
+  shoot: PropTypes.func.isRequired
 };
 
 Canvas.defaultProps = {

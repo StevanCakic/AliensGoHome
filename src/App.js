@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import { getCanvasPosition } from "./utils/formulas";
 import Canvas from "./components/Canvas";
 import * as Auth0 from "auth0-web";
-import io from '../server/node_modules/socket.io-client';
+import io from "../server/node_modules/socket.io-client";
 
 Auth0.configure({
   domain: "aliens-go.auth0.com",
@@ -18,6 +18,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.trackMouse = this.trackMouse.bind(this);
+    this.shoot = this.shoot.bind(this);
   }
 
   componentDidMount() {
@@ -76,6 +77,10 @@ class App extends Component {
     this.canvasMousePosition = getCanvasPosition(e);
   }
 
+  shoot() {
+    this.props.shoot(this.canvasMousePosition);
+  }
+
   render() {
     return (
       <Canvas
@@ -85,6 +90,7 @@ class App extends Component {
         players={this.props.players}
         startGame={this.props.startGame}
         trackMouse={event => this.trackMouse(event)}
+        shoot={this.shoot}
       />
     );
   }
@@ -123,7 +129,8 @@ App.propTypes = {
       name: PropTypes.string.isRequired,
       picture: PropTypes.string.isRequired
     })
-  )
+  ),
+  shoot: PropTypes.func.isRequired
 };
 
 App.defaultProps = {
