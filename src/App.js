@@ -19,6 +19,8 @@ class App extends Component {
     super(props);
     this.trackMouse = this.trackMouse.bind(this);
     this.shoot = this.shoot.bind(this);
+    this.socket = null;
+    this.currentPlayer = null;
   }
 
   componentDidMount() {
@@ -26,40 +28,27 @@ class App extends Component {
     Auth0.subscribe(auth => {
       if (!auth) return;
 
-      const playerProfile = Auth0.getProfile();
-      const currentPlayer = {
-        id: playerProfile.sub,
+      this.playerProfile = Auth0.getProfile();
+      this.currentPlayer = {
+        id: this.playerProfile.sub,
         maxScore: 0,
-        name: playerProfile.name,
-        picture: playerProfile.picture
+        name: this.playerProfile.name,
+        picture: this.playerProfile.picture
       };
 
-      this.props.loggedIn(currentPlayer);
+      this.props.loggedIn(this.currentPlayer);
 
-      const socket = io("http://localhost:3001", {
+      this.socket = io("http://localhost:3001", {
         query: `token=${Auth0.getAccessToken()}`
       });
 
-      let emitted = false;
-      socket.on("players", players => {
+      this.socket.on("players", players => {
         this.props.leaderboardLoaded(players);
-
-        if (emitted) return;
-        socket.emit("new-max-score", {
-          id: playerProfile.sub,
-          maxScore: 120,
-          name: playerProfile.name,
-          picture: playerProfile.picture
+        players.forEach(player => {
+          if (player.id === this.currentPlayer.id) {
+            this.currentPlayer.maxScore = player.maxScore;
+          }
         });
-        emitted = true;
-        setTimeout(() => {
-          socket.emit("new-max-score", {
-            id: playerProfile.sub,
-            maxScore: 222,
-            name: playerProfile.name,
-            picture: playerProfile.picture
-          });
-        }, 5000);
       });
     });
     setInterval(() => {
@@ -71,6 +60,17 @@ class App extends Component {
       cnv.style.height = `${window.innerHeight}px`;
     };
     window.onresize();
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (!nextProps.gameState.started && this.props.gameState.started) {
+      if (this.currentPlayer.maxScore < this.props.gameState.kills) {
+        this.socket.emit('new-max-score', {
+          ...this.currentPlayer,
+          maxScore: this.props.gameState.kills,
+        });
+      }
+    }
   }
 
   trackMouse(e) {
